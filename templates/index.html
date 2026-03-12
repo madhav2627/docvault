@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocVault – Document Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f0f13;
+      --surface:  #13131a;
+      --surface2: #18181f;
+      --border:   #22222e;
+      --border2:  #2a2a38;
+      --gold:     #e8c97e;
+      --green:    #6b8f71;
+      --red:      #e87e7e;
+      --text:     #e8e4dc;
+      --muted:    #888;
+      --dim:      #555;
+      --radius:   10px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,15,19,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto;
+      height: 68px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.45rem; font-weight: 700; color: var(--gold); letter-spacing: -.02em; }
+    .logo span { color: var(--green); }
+    .admin-badge {
+      margin-left: .6rem;
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: #1a1a10; border: 1px solid #e8c97e30;
+      color: var(--gold); font-size: .72rem; letter-spacing: .08em;
+      padding: .25rem .7rem; border-radius: 20px;
+    }
+
+    /* ── BUTTONS ── */
+    button { cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all .18s; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border2); color: var(--muted);
+      font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
+      padding: .45rem 1rem; border-radius: 5px;
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-danger {
+      background: transparent;
+      border: 1px solid #3a1f1f; color: #a06060;
+      font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+      padding: .45rem 1rem; border-radius: 5px;
+    }
+    .btn-danger:hover { border-color: var(--red); color: var(--red); background: #1f0a0a; }
+    .btn-primary {
+      background: var(--gold); color: #0f0f13;
+      font-size: .88rem; font-weight: 600;
+      padding: .65rem 1.4rem; border-radius: 7px;
+    }
+    .btn-primary:hover { background: #f2d898; }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border2); color: var(--muted);
+      font-size: .88rem; padding: .65rem 1.1rem; border-radius: 7px;
+    }
+    .btn-secondary:hover { border-color: var(--muted); color: var(--text); }
+
+    /* ── HERO ── */
+    .hero { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem 2.5rem; text-align: center; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.6rem); line-height: 1.15; margin-bottom: .65rem; }
+    .hero h1 em { color: var(--gold); font-style: italic; }
+    .hero p { color: var(--muted); font-weight: 300; font-size: .97rem; }
+
+    /* ── SEARCH ── */
+    .search-wrap { max-width: 500px; margin: 1.8rem auto 0; position: relative; }
+    .search-wrap input {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border2); color: var(--text);
+      padding: .82rem 1rem .82rem 2.7rem;
+      border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: .93rem; outline: none;
+      transition: border-color .2s;
+    }
+    .search-wrap input:focus { border-color: #e8c97e44; }
+    .search-wrap input::placeholder { color: var(--dim); }
+    .search-icon { position: absolute; left: .95rem; top: 50%; transform: translateY(-50%); color: var(--dim); pointer-events: none; }
+
+    /* ── MAIN ── */
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+    /* ── UPLOAD ZONE ── */
+    #upload-zone {
+      border: 2px dashed var(--border2); border-radius: 12px;
+      padding: 2.5rem; text-align: center; cursor: pointer;
+      background: var(--surface); margin-bottom: 1.8rem;
+      transition: border-color .2s, background .2s;
+    }
+    #upload-zone:hover, #upload-zone.drag { border-color: #e8c97e55; background: #16160d; }
+    #upload-zone .up-icon { font-size: 2.2rem; margin-bottom: .6rem; }
+    #upload-zone h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: #cac6be; margin-bottom: .3rem; }
+    #upload-zone p { font-size: .82rem; color: var(--dim); }
+    #upload-zone .choose-btn {
+      display: inline-block; margin-top: .9rem;
+      background: var(--gold); color: #0f0f13;
+      font-size: .82rem; font-weight: 600;
+      padding: .5rem 1.3rem; border-radius: 6px;
+      pointer-events: none;
+    }
+
+    /* ── PROGRESS ── */
+    #progress-wrap { margin-bottom: 1.5rem; display: none; }
+    #progress-label { font-size: .78rem; color: var(--muted); margin-bottom: .4rem; }
+    .progress-bar { height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), var(--green)); transition: width .25s; }
+
+    /* ── SECTION HEADER ── */
+    .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+    .sec-label { font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--dim); }
+    .sec-count { font-size: .72rem; color: var(--dim); }
+
+    /* ── DOC GRID ── */
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; }
+    .doc-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.2rem;
+      transition: transform .18s, border-color .18s, box-shadow .18s;
+      position: relative; overflow: hidden;
+    }
+    .doc-card::after {
+      content: ''; position: absolute; inset: 0 0 auto 0;
+      height: 2px; background: linear-gradient(90deg, transparent, #e8c97e18, transparent);
+    }
+    .doc-card:hover { transform: translateY(-2px); border-color: #28283a; box-shadow: 0 10px 36px #00000055; }
+    .doc-card .di { font-size: 1.9rem; margin-bottom: .65rem; }
+    .doc-card .dn { font-size: .92rem; font-weight: 500; color: var(--text); margin-bottom: .3rem; word-break: break-word; line-height: 1.4; }
+    .doc-card .dm { font-size: .75rem; color: var(--dim); margin-bottom: .9rem; }
+    .doc-actions { display: flex; gap: .5rem; }
+    .btn-dl {
+      flex: 1; background: transparent;
+      border: 1px solid var(--border2); color: #9090a8;
+      font-size: .78rem; padding: .48rem;
+      border-radius: 6px; text-decoration: none; text-align: center;
+      display: block; transition: all .18s;
+    }
+    .btn-dl:hover { border-color: var(--green); color: var(--green); background: #0a150c; }
+    .btn-del-card {
+      background: transparent; border: 1px solid #2a1818;
+      color: #885555; font-size: .78rem;
+      padding: .48rem .72rem; border-radius: 6px;
+      transition: all .18s;
+    }
+    .btn-del-card:hover { border-color: var(--red); color: var(--red); background: #1a0808; }
+
+    /* ── EMPTY STATE ── */
+    #empty { display: none; text-align: center; padding: 4rem 2rem; }
+    #empty .e-icon { font-size: 3rem; opacity: .25; margin-bottom: .8rem; }
+    #empty h3 { font-family: 'Playfair Display', serif; color: var(--dim); font-size: 1.15rem; margin-bottom: .4rem; }
+    #empty p { font-size: .82rem; color: #383842; }
+
+    /* ── MODAL ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.65);
+      backdrop-filter: blur(5px); z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface2); border: 1px solid var(--border2);
+      border-radius: 14px; padding: 2rem; width: 100%; max-width: 370px;
+      transform: translateY(12px); transition: transform .2s;
+    }
+    .overlay.open .modal { transform: translateY(0); }
+    .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.35rem; margin-bottom: .4rem; }
+    .modal p  { font-size: .83rem; color: var(--muted); margin-bottom: 1.4rem; line-height: 1.5; }
+    .modal input {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border2); color: var(--text);
+      padding: .7rem 1rem; border-radius: 7px;
+      font-family: 'DM Sans', sans-serif; font-size: .92rem;
+      outline: none; margin-bottom: .5rem;
+      transition: border-color .2s;
+    }
+    .modal input:focus { border-color: #e8c97e44; }
+    .err-msg { font-size: .78rem; color: var(--red); min-height: 1.1rem; margin-bottom: .5rem; }
+    .modal-btns { display: flex; gap: .7rem; margin-top: .4rem; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 400;
+      background: var(--surface2); border: 1px solid var(--border2);
+      color: var(--text); padding: .7rem 1.2rem; border-radius: 8px;
+      font-size: .88rem; box-shadow: 0 8px 32px #00000088;
+      transform: translateX(30px); opacity: 0;
+      transition: all .25s; pointer-events: none;
+    }
+    #toast.show { transform: translateX(0); opacity: 1; }
+    #toast.ok   { border-left: 3px solid var(--green); }
+    #toast.err  { border-left: 3px solid var(--red);   }
+
+    hr.div { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0 0; }
+    footer { text-align: center; padding: 1.5rem 2rem; font-size: .72rem; color: #2e2e38; letter-spacing: .12em; }
+
+    /* ── SPINNER ── */
+    .spinner { display: none; text-align: center; padding: 3rem; font-size: .85rem; color: var(--dim); }
+    .spinner.show { display: block; }
+
+    @media (max-width: 600px) {
+      .doc-grid { grid-template-columns: 1fr; }
+      .hero { padding: 2.5rem 1.2rem 1.8rem; }
+      main { padding: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div style="display:flex;align-items:center">
+      <div class="logo">Doc<span>Vault</span></div>
+      <span class="admin-badge" id="admin-badge" style="display:none">⚡ Admin</span>
+    </div>
+    <div id="header-btns">
+      <button class="btn-ghost" onclick="openLogin()">Admin Login</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>A shared space for <em>documents</em></h1>
+  <p>All files are publicly accessible · No account required to browse or download</p>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search" placeholder="Search documents…" oninput="filterDocs()" />
+  </div>
+</section>
+
+<!-- MAIN -->
+<main>
+  <!-- Upload zone (admin only) -->
+  <div id="upload-section" style="display:none">
+    <div id="upload-zone"
+      onclick="document.getElementById('file-input').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleDrop(event)">
+      <div class="up-icon">📤</div>
+      <h3>Drop files here to upload</h3>
+      <p>Any file type · Multiple files · Max {{ max_mb }} MB each</p>
+      <div class="choose-btn">Choose Files</div>
+    </div>
+    <input type="file" id="file-input" multiple style="display:none" onchange="uploadFiles(this.files)" />
+    <div id="progress-wrap">
+      <div id="progress-label">Uploading…</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Docs header -->
+  <div class="sec-head">
+    <span class="sec-label">Documents</span>
+    <span class="sec-count" id="doc-count">0 files</span>
+  </div>
+
+  <div class="spinner show" id="spinner">Loading…</div>
+
+  <!-- Document grid -->
+  <div class="doc-grid" id="doc-grid"></div>
+
+  <!-- Empty state -->
+  <div id="empty">
+    <div class="e-icon">📭</div>
+    <h3 id="empty-title">No documents yet</h3>
+    <p id="empty-sub">Check back later</p>
+  </div>
+</main>
+
+<hr class="div" />
+<footer>DOCVAULT · ALL DOCUMENTS PUBLICLY ACCESSIBLE</footer>
+
+<!-- LOGIN MODAL -->
+<div class="overlay" id="login-modal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>Admin Access</h2>
+    <p>Enter the admin password to upload and manage documents.</p>
+    <input type="password" id="pw-input" placeholder="Password"
+      oninput="document.getElementById('pw-err').textContent=''"
+      onkeydown="if(event.key==='Enter')submitLogin()" />
+    <div class="err-msg" id="pw-err"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeLogin()">Cancel</button>
+      <button class="btn-primary"   onclick="submitLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="overlay" id="del-modal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>Delete Document</h2>
+    <p>Are you sure you want to delete <strong id="del-name" style="color:var(--text)"></strong>?<br>This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-secondary"  onclick="closeDelModal()">Cancel</button>
+      <button class="btn-primary"    id="del-confirm-btn"
+        style="background:var(--red);color:#0f0f13" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+  // ── state ──────────────────────────────────────
+  let allDocs    = [];
+  let isAdmin    = false;
+  let deleteId   = null;
+  let toastTimer = null;
+
+  const FILE_ICONS = {
+    pdf:'📄', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊',
+    ppt:'📋', pptx:'📋', txt:'📃',
+    jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️', webp:'🖼️',
+    mp4:'🎬', mov:'🎬', mp3:'🎵', wav:'🎵',
+    zip:'🗜️', rar:'🗜️', '7z':'🗜️',
+  };
+  const icon = name => {
+    const ext = name.split('.').pop().toLowerCase();
+    return FILE_ICONS[ext] || '📁';
+  };
+
+  // ── init ───────────────────────────────────────
+  (async () => {
+    const s = await api('/api/session');
+    if (s.is_admin) setAdmin(true);
+    loadDocs();
+  })();
+
+  // ── api helper ─────────────────────────────────
+  async function api(url, opts = {}) {
+    const r = await fetch(url, { headers: {'Content-Type':'application/json'}, ...opts });
+    return r.json();
+  }
+
+  // ── docs ───────────────────────────────────────
+  async function loadDocs() {
+    show('spinner', true);
+    allDocs = await api('/api/documents');
+    show('spinner', false);
+    renderDocs(allDocs);
+  }
+
+  function filterDocs() {
+    const q = document.getElementById('search').value.toLowerCase();
+    renderDocs(allDocs.filter(d => d.original_name.toLowerCase().includes(q)));
+  }
+
+  function renderDocs(docs) {
+    const grid = document.getElementById('doc-grid');
+    const empty = document.getElementById('empty');
+    const q = document.getElementById('search').value;
+
+    document.getElementById('doc-count').textContent =
+      `${docs.length} file${docs.length !== 1 ? 's' : ''}`;
+
+    if (!docs.length) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      document.getElementById('empty-title').textContent =
+        q ? 'No results found' : 'No documents yet';
+      document.getElementById('empty-sub').textContent =
+        q ? 'Try a different search term' : (isAdmin ? 'Upload your first document above' : 'Check back later');
+      return;
+    }
+
+    empty.style.display = 'none';
+    grid.innerHTML = docs.map(d => `
+      <div class="doc-card" id="card-${d.id}">
+        <div class="di">${icon(d.original_name)}</div>
+        <div class="dn">${escHtml(d.original_name)}</div>
+        <div class="dm">${d.size_human} &middot; ${d.uploaded_at}</div>
+        <div class="doc-actions">
+          <a class="btn-dl" href="/api/download/${d.id}" download>↓ Download</a>
+          ${isAdmin ? `<button class="btn-del-card" onclick="openDelModal(${d.id}, '${escHtml(d.original_name).replace(/'/g,"\\'")}')">🗑</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── upload ─────────────────────────────────────
+  async function uploadFiles(files) {
+    if (!files.length) return;
+    const wrap = document.getElementById('progress-wrap');
+    const fill = document.getElementById('progress-fill');
+    const label = document.getElementById('progress-label');
+
+    wrap.style.display = 'block';
+    fill.style.width = '10%';
+    label.textContent = `Uploading ${files.length} file(s)…`;
+
+    const fd = new FormData();
+    for (const f of files) fd.append('files', f);
+
+    // fake progress animation while uploading
+    let prog = 10;
+    const tick = setInterval(() => {
+      if (prog < 88) { prog += 4; fill.style.width = prog + '%'; }
+    }, 200);
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      clearInterval(tick);
+      fill.style.width = '100%';
+      if (data.error) { toast(data.error, 'err'); }
+      else {
+        toast(`${data.uploaded.length} file(s) uploaded!`, 'ok');
+        await loadDocs();
+      }
+    } catch(e) {
+      clearInterval(tick);
+      toast('Upload failed', 'err');
+    }
+
+    setTimeout(() => { wrap.style.display = 'none'; fill.style.width = '0%'; }, 800);
+    document.getElementById('file-input').value = '';
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('upload-zone').classList.remove('drag');
+    uploadFiles(e.dataTransfer.files);
+  }
+
+  // ── delete ─────────────────────────────────────
+  function openDelModal(id, name) {
+    deleteId = id;
+    document.getElementById('del-name').textContent = name;
+    document.getElementById('del-modal').classList.add('open');
+  }
+  function closeDelModal() {
+    deleteId = null;
+    document.getElementById('del-modal').classList.remove('open');
+  }
+  async function confirmDelete() {
+    if (!deleteId) return;
+    const r = await api(`/api/delete/${deleteId}`, { method: 'DELETE' });
+    closeDelModal();
+    if (r.ok) { toast('Document deleted', 'ok'); await loadDocs(); }
+    else toast(r.error || 'Delete failed', 'err');
+  }
+
+  // ── login ──────────────────────────────────────
+  function openLogin() {
+    document.getElementById('login-modal').classList.add('open');
+    setTimeout(() => document.getElementById('pw-input').focus(), 50);
+  }
+  function closeLogin() {
+    document.getElementById('login-modal').classList.remove('open');
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-err').textContent = '';
+  }
+  async function submitLogin() {
+    const pw = document.getElementById('pw-input').value;
+    const r  = await api('/api/login', { method:'POST', body: JSON.stringify({password: pw}) });
+    if (r.ok) { setAdmin(true); closeLogin(); toast('Welcome, Admin!', 'ok'); renderDocs(allDocs); }
+    else {
+      document.getElementById('pw-err').textContent = '⚠ Incorrect password';
+      document.getElementById('pw-input').value = '';
+    }
+  }
+  async function doLogout() {
+    await api('/api/logout', { method:'POST' });
+    setAdmin(false);
+    toast('Logged out', 'ok');
+    renderDocs(allDocs);
+  }
+
+  function setAdmin(val) {
+    isAdmin = val;
+    document.getElementById('admin-badge').style.display  = val ? 'inline-flex' : 'none';
+    document.getElementById('upload-section').style.display = val ? 'block' : 'none';
+    document.getElementById('header-btns').innerHTML = val
+      ? `<button class="btn-danger" onclick="doLogout()">Logout</button>`
+      : `<button class="btn-ghost"  onclick="openLogin()">Admin Login</button>`;
+  }
+
+  // ── close modals on backdrop click ─────────────
+  document.querySelectorAll('.overlay').forEach(o => {
+    o.addEventListener('click', () => o.classList.remove('open'));
+  });
+
+  // ── toast ──────────────────────────────────────
+  function toast(msg, type = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'ok' ? '✓ ' : '✗ ') + msg;
+    t.className = `show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.className = '', 3000);
+  }
+
+  // ── util ───────────────────────────────────────
+  function show(id, v) { document.getElementById(id).classList.toggle('show', v); }
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+</script>
+</body>
+</html>
